@@ -16,7 +16,7 @@ now=time.localtime(time.time())
 currentmonth=now.tm_mon
 currentday=now.tm_mday
 currentyear=now.tm_year
-filename = "{0}_{1}_{2}_env-monitor.csv".format(currentyear, currentmonth, currentday)
+filename = "{0}_{1}_{2}_conex-env-monitor.csv".format(currentyear, currentmonth, currentday)
 
 #### informative messaging for starting storage file
 print "Opening ",filename, " for appending..."
@@ -105,7 +105,7 @@ while True:
             #if MM/DD/YR changes, update filename
             #this translates to a new file every day
             ##!!!!header row is dropped from subsequent days
-            filename = "{0}_{1}_{2}_env-monitor.csv".format(currentyear, currentmonth, currentday)
+            filename = "{0}_{1}_{2}_conex-env-monitor.csv".format(currentyear, currentmonth, currentday)
         else:
             print('Failed to get reading from Conex. Try again!')
 
