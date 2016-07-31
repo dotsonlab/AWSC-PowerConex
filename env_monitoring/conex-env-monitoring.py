@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import sys
 import time
-
+import os
 import Adafruit_DHT
 
 # Type of sensor, can be Adafruit_DHT.DHT11, Adafruit_DHT.DHT22, or Adafruit_DHT.AM2302.
@@ -12,18 +12,13 @@ DHT_TYPE = Adafruit_DHT.AM2302
 #UTILITY_DHT_PIN = 'P8_12'
 CONEX_DHT_PIN = 'P8_11'
 
+restart = True
+
 now=time.localtime(time.time())
 currentmonth=now.tm_mon
 currentday=now.tm_mday
 currentyear=now.tm_year
 filename = "{0}_{1}_{2}_conex-env-monitor.csv".format(currentyear, currentmonth, currentday)
-
-#### informative messaging for starting storage file
-print "Opening ",filename, " for appending..."
-print "reading inputs and storing data..."
-file=open(filename,"a")
-file.write("Time,Location,Temp,Humidity\n")
-file.close()
 
 while True:
     try:
@@ -37,6 +32,21 @@ while True:
         # How long to wait (in seconds) between measurements.
         FREQUENCY_SECONDS = 300
 
+        if (os.path.isfile(filename) and restart):
+                    #restart ensures that it will only execute this once.
+                    restart = False
+                    #restarting the file
+                    file = open(filename)
+
+
+        elif not (os.path.isfile(filename)):
+            #Initial and daily startup
+            file=open(filename,"a")
+            #### informative messaging for starting storage file
+            print "Opening ",filename, " for appending..."
+            print "reading inputs and storing data..."
+            file.write("Time,ConTemp,ConHumidity\n")
+            file.close()
         # Attempt to get sensor reading in cabin
 #        humidity, temp = Adafruit_DHT.read_retry(DHT_TYPE, CABIN_DHT_PIN)
 
@@ -86,21 +96,21 @@ while True:
 #            print('Failed to get reading from Utility. Try again!')
 
         # Attempt to get sensor reading in conex connection.
-        humidity, temp = Adafruit_DHT.read_retry(DHT_TYPE, CONEX_DHT_PIN)
+        conhumidity, contemp = Adafruit_DHT.read_retry(DHT_TYPE, CONEX_DHT_PIN)
 
         # Skip to the next reading if a valid measurement couldn't be taken.
         # This might happen if the CPU is under a lot of load and the sensor
         # can't be reliably read (timing is critical to read the sensor).
-        if humidity is not None and temp is not None:
+        if conhumidity is not None and contemp is not None:
             print('-------Conex-------')
-            print('Temperature: {0:0.1f} C'.format(temp))
-            print('Humidity:    {0:0.1f} %'.format(humidity))
+            print('Temperature: {0:0.1f} C'.format(contemp))
+            print('Humidity:    {0:0.1f} %'.format(conhumidity))
             #open file to append
             file=open(filename,"a")
             #add first column date/time stamp
             file.write(pt)
             #add next columns with raw reading, and converted voltage
-            file.write(",%s,%f,%f\n" % ('Conex',temp,humidity))
+            file.write(",%s,%f,%f\n" % ('Conex',contemp,conhumidity))
             file.close()
             #if MM/DD/YR changes, update filename
             #this translates to a new file every day
